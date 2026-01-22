@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="card card-field">
+    <div class="card-header-field bg-success">
+        <i class="fas fa-users me-2"></i> Sincronização
+    </div>
+    <div class="card-body p-4 text-center">
+        
+        <p class="lead mb-4">Para iniciar uma nova aferição, crie uma sala ou entre em uma existente.</p>
+
+        <div class="d-grid gap-3">
+            <button id="createSessionBtn" class="btn btn-success btn-field">
+                <i class="fas fa-plus-circle"></i> Criar Nova Sala
+            </button>
+            
+            <div class="position-relative my-3">
+                <hr>
+                <span class="position-absolute top-50 start-50 translate-middle bg-white px-2 text-muted">OU</span>
+            </div>
+
+            <div class="input-group mb-3">
+                <input type="text" id="sessionInput" class="form-control input-lg text-center" placeholder="CÓDIGO DA SALA" style="text-transform: uppercase;">
+                <button class="btn btn-outline-primary" type="button" id="joinBtn">Entrar</button>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+document.getElementById('createSessionBtn').addEventListener('click', async () => {
+    const res = await fetch('/api/create_session', { method: 'POST' });
+    const data = await res.json();
+    if(data.session_id) {
+        window.location.href = `/afericao/${data.session_id}`;
+    }
+});
+
+document.getElementById('joinBtn').addEventListener('click', () => {
+    const code = document.getElementById('sessionInput').value.trim();
+    if(code) {
+        window.location.href = `/afericao/${code}`;
+    } else {
+        alert('Digite o código da sala!');
+    }
+});
+</script>
+{% endblock %}

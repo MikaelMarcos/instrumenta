@@ -1,0 +1,434 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<!-- MODAL POPUP: PROCEDIMENTO OPERACIONAL PADRÃO -->
+<div class="modal fade" id="sopModal" tabindex="-1" aria-labelledby="sopModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title" id="sopModalLabel"><i class="fas fa-book me-2"></i> PROCEDIMENTO OPERACIONAL PADRÃO (POP)</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="alert alert-info">
+            <strong>Medidor Ultrassônico Portátil CAMP FLOW</strong><br>
+            Instalação em Tubulação – Montagem V / Z (Up & Down)
+        </div>
+
+        <h5 class="text-primary mt-3">🔧 1. PREPARAÇÃO EM CAMPO</h5>
+        <p><strong>1.1 Medição da tubulação</strong><br>
+        Medir o perímetro externo da tubulação com trena em milímetros (mm).<br>
+        <em>Nota: Diâmetro Externo = Perímetro ÷ 3,1416</em></p>
+        
+        <p><strong>1.2 Preparação da superfície</strong><br>
+        Limpar o local (poeira, ferrugem, tinta). Aplicar gel acoplante garantindo contato total.</p>
+        
+        <p><strong>1.3 Instalação dos sensores</strong><br>
+        Sensor UP → antes do fluxo<br>
+        Sensor DOWN → depois do fluxo<br>
+        Cabos bem conectados e sem folga.</p>
+
+        <h5 class="text-success mt-4">⚙️ 2. CONFIGURAÇÃO NO CAMP FLOW (MENU POR MENU)</h5>
+        
+        <table class="table table-sm table-striped table-bordered text-sm">
+            <thead class="table-dark">
+                <tr>
+                    <th style="width: 20%">Menu</th>
+                    <th>Ação / Descrição</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>M10</strong><br>Perímetro</td>
+                    <td>Inserir o perímetro externo medido (mm).</td>
+                </tr>
+                <tr>
+                    <td><strong>M11</strong><br>Diâmetro Ext.</td>
+                    <td>Confirmar o diâmetro externo calculado. (Dext = Perímetro ÷ 3,1416)</td>
+                </tr>
+                <tr>
+                    <td><strong>M12</strong><br>Parede</td>
+                    <td><span class="text-danger fw-bold">Inserir espessura (mm).</span> Valor da tabela (K7, K9, PVC...).<br><em>Erro aqui = erro na vazão.</em></td>
+                </tr>
+                <tr>
+                    <td><strong>M13</strong><br>Diâmetro Int.</td>
+                    <td>Automático. Apenas conferir.</td>
+                </tr>
+                <tr>
+                    <td><strong>M14</strong><br>Material</td>
+                    <td>Selecionar material (SteelPC, CI, PVC, etc). Ajusta a velocidade do som.</td>
+                </tr>
+                <tr>
+                    <td><strong>M15</strong><br>Revestimento</td>
+                    <td>Selecionar tipo (None, Cement/Tarypox, Epoxy). Inserir espessura se houver.</td>
+                </tr>
+                <tr>
+                    <td><strong>M20</strong><br>Fluido</td>
+                    <td>Selecionar: Water, Raw Water, Sewage, etc.</td>
+                </tr>
+                <tr>
+                    <td><strong>M21</strong><br>Transdutor</td>
+                    <td>Selecionar: <strong>TL-1 (Médio)</strong> (Padrão).</td>
+                </tr>
+                <tr>
+                    <td><strong>M22</strong><br>Montagem</td>
+                    <td>
+                        <strong>V (V-Method):</strong> Tubos médios/pequenos. Mais sensível.<br>
+                        <strong>Z (Z-Method):</strong> Tubos grandes, parede espessa, sinal fraco.
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>M23</strong><br>Espaçamento</td>
+                    <td><strong>AUTOMÁTICO.</strong> O aparelho dá a distância exata em mm.
+                    <br><em>Marcar UP, medir a distância, colar DOWN. Garantir alinhamento.</em></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h5 class="text-warning mt-4">📡 3. VERIFICAÇÃO DE SINAL</h5>
+        <p><strong>M90 – Signal Strength / Quality:</strong><br>
+        Ideal: <strong>GOOD</strong>. Se POOR: reaplicar gel, alinhar, trocar montagem (V ↔ Z).</p>
+        <p><strong>M91 – Transit Time:</strong> Valor deve ser estável.</p>
+
+        <h5 class="text-info mt-4">📊 4. LEITURA</h5>
+        <p><strong>M00:</strong> Vazão Instantânea<br>
+        <strong>M01:</strong> Velocidade do fluido</p>
+
+        <div class="alert alert-secondary mt-3">
+            <strong>Observações Importantes:</strong><br>
+            - Evitar curvas, válvulas e bombas próximas (10D antes, 5D depois).<br>
+            - Sempre registrar montagem usada, espaçamento e qualidade do sinal.
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+        <button type="button" class="btn btn-primary" onclick="window.print()">Imprimir</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+
+    <div class="col-12 mb-4 d-flex justify-content-between align-items-center">
+        <h2 class="h4 text-primary m-0"><i class="fas fa-satellite-dish me-2"></i>Ultrassônico Portátil</h2>
+        <button class="btn btn-outline-primary fw-bold" data-bs-toggle="modal" data-bs-target="#sopModal">
+            <i class="fas fa-book-open me-2"></i> POP COMPLETO
+        </button>
+    </div>
+
+    <!-- Tab Navigation -->
+    <div class="col-12 mb-3">
+        <ul class="nav nav-pills nav-fill" id="myTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active fw-bold" id="guide-tab" data-bs-toggle="tab" data-bs-target="#guide" type="button" role="tab"><i class="fas fa-list-ol me-2"></i> GUIA RÁPIDO (M-CODES)</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link fw-bold" id="calc-tab" data-bs-toggle="tab" data-bs-target="#calc" type="button" role="tab"><i class="fas fa-calculator me-2"></i> CALCULADORA (M12/M15)</button>
+            </li>
+        </ul>
+    </div>
+
+    <div class="col-12">
+        <div class="tab-content" id="myTabContent">
+
+            <!-- TAB 1: GUIDE -->
+            <div class="tab-pane fade show active" id="guide" role="tabpanel">
+                
+                <div class="row g-3">
+                    <div class="col-lg-8">
+                        <div class="card card-field h-100">
+                            <div class="card-header bg-dark text-white fw-bold">
+                                <i class="fas fa-project-diagram me-2"></i> CONFIGURAÇÃO MENU-A-MENU
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="list-group list-group-flush">
+                                    <div class="list-group-item d-flex align-items-center">
+                                        <span class="badge bg-secondary rounded-pill me-3" style="width: 50px;">M10</span>
+                                        <div>
+                                            <strong class="d-block">Perímetro Externo</strong>
+                                            <span class="text-muted small">Insira o valor medido na trena (mm).</span>
+                                        </div>
+                                    </div>
+                                    <div class="list-group-item d-flex align-items-center">
+                                        <span class="badge bg-secondary rounded-pill me-3" style="width: 50px;">M11</span>
+                                        <div>
+                                            <strong class="d-block">Diâmetro Externo</strong>
+                                            <span class="text-muted small">Confirme o cálculo (Perímetro ÷ 3.14).</span>
+                                        </div>
+                                    </div>
+                                    <div class="list-group-item d-flex align-items-center bg-warning bg-opacity-10">
+                                        <span class="badge bg-danger rounded-pill me-3" style="width: 50px;">M12</span>
+                                        <div>
+                                            <strong class="d-block text-danger">Espessura da Parede (CRÍTICO)</strong>
+                                            <span class="text-muted small">Insira valor da Tabela/Calculadora. Ex: K7, K9.</span>
+                                        </div>
+                                        <button class="btn btn-sm btn-outline-danger ms-auto" onclick="switchTab()">Calc</button>
+                                    </div>
+                                    <div class="list-group-item d-flex align-items-center">
+                                        <span class="badge bg-secondary rounded-pill me-3" style="width: 50px;">M13</span>
+                                        <div>
+                                            <strong class="d-block">Diâmetro Interno</strong>
+                                            <span class="text-muted small">Automático. Apenas confira.</span>
+                                        </div>
+                                    </div>
+                                    <div class="list-group-item d-flex align-items-center">
+                                        <span class="badge bg-secondary rounded-pill me-3" style="width: 50px;">M14</span>
+                                        <div>
+                                            <strong class="d-block">Material</strong>
+                                            <span class="text-muted small">Selecione: SteelPC (Aço), CI (Ferro), PVC, etc.</span>
+                                        </div>
+                                    </div>
+                                    <div class="list-group-item d-flex align-items-center bg-warning bg-opacity-10">
+                                        <span class="badge bg-danger rounded-pill me-3" style="width: 50px;">M15</span>
+                                        <div>
+                                            <strong class="d-block text-danger">Revestimento Interno</strong>
+                                            <span class="text-muted small">None, Cement, Epoxy? Insira espessura se houver.</span>
+                                        </div>
+                                        <button class="btn btn-sm btn-outline-danger ms-auto" onclick="switchTab()">Calc</button>
+                                    </div>
+                                    <div class="list-group-item d-flex align-items-center">
+                                        <span class="badge bg-primary rounded-pill me-3" style="width: 50px;">M20</span>
+                                        <div>
+                                            <strong class="d-block">Tipo de Fluido</strong>
+                                            <span class="text-muted small">Water, Raw Water (Bruta), Sewage (Esgoto).</span>
+                                        </div>
+                                    </div>
+                                    <div class="list-group-item d-flex align-items-center">
+                                        <span class="badge bg-primary rounded-pill me-3" style="width: 50px;">M21</span>
+                                        <div>
+                                            <strong class="d-block">Transdutor</strong>
+                                            <span class="text-muted small">Selecione <strong>TL-1</strong> (Médio) por padrão.</span>
+                                        </div>
+                                    </div>
+                                    <div class="list-group-item d-flex align-items-center">
+                                        <span class="badge bg-primary rounded-pill me-3" style="width: 50px;">M22</span>
+                                        <div>
+                                            <strong class="d-block">Montagem</strong>
+                                            <span class="text-muted small"><strong>V</strong> (Padrão) ou <strong>Z</strong> (Tubos grandes/ruins).</span>
+                                        </div>
+                                    </div>
+                                    <div class="list-group-item d-flex align-items-center bg-success text-white">
+                                        <span class="badge bg-light text-dark rounded-pill me-3" style="width: 50px;">M23</span>
+                                        <div>
+                                            <strong class="d-block">Espaçamento (RESULTADO)</strong>
+                                            <span class="small">O valor em mm aparecerá. Instale os sensores nessa distância exata.</span>
+                                        </div>
+                                    </div>
+                                     <div class="list-group-item d-flex align-items-center">
+                                        <span class="badge bg-dark rounded-pill me-3" style="width: 50px;">M90</span>
+                                        <div>
+                                            <strong class="d-block">Qualidade do Sinal</strong>
+                                            <span class="text-muted small">Busque <strong>GOOD</strong>. Se POOR, ajuste gel/alinhamento.</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-4">
+                        <div class="card card-field mb-3 bg-light border-0">
+                            <div class="card-body">
+                                <h6 class="fw-bold text-uppercase text-muted mb-3">Fluxo Lógico (Resumo)</h6>
+                                <ul class="list-unstyled small logic-flow">
+                                    <li class="mb-2"><i class="fas fa-chevron-down text-primary me-2"></i>Medir Perímetro</li>
+                                    <li class="mb-2"><i class="fas fa-chevron-down text-primary me-2"></i><strong>M10</strong>: Inserir Perímetro</li>
+                                    <li class="mb-2"><i class="fas fa-chevron-down text-primary me-2"></i><strong>M12/M15</strong>: Espessuras (Tabela)</li>
+                                    <li class="mb-2"><i class="fas fa-chevron-down text-primary me-2"></i><strong>M14, M20-M22</strong>: Configs</li>
+                                    <li class="mb-2"><i class="fas fa-chevron-down text-primary me-2"></i><strong>M23</strong>: Ver Distância</li>
+                                    <li class="mb-2"><i class="fas fa-chevron-down text-primary me-2"></i>Instalar Sensores</li>
+                                    <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i><strong>M90</strong>: Validar Sinal</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                         <div class="card card-field border-warning">
+                            <div class="card-header bg-warning text-dark fw-bold">Dicas de Campo</div>
+                            <div class="card-body small">
+                                <ul class="mb-0 ps-3">
+                                    <li>Evite curvas e bombas (10D antes, 5D depois).</li>
+                                    <li>Sempre limpe bem o tubo antes do gel.</li>
+                                    <li>Se o sinal oscilar muito, tente mudar para Montagem Z.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- TAB 2: CALCULATOR -->
+            <div class="tab-pane fade" id="calc" role="tabpanel">
+                <div class="card card-field shadow">
+                    <div class="card-header-field bg-primary text-white">
+                        <i class="fas fa-ruler-combined me-2"></i> Calculadora (Para M12 e M15)
+                    </div>
+                    <div class="card-body p-4">
+                        <form method="POST" action="/tubulacao">
+                            
+                            <!-- Input Type -->
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">O que você mediu?</label>
+                                <div class="btn-group w-100" role="group">
+                                    <input type="radio" class="btn-check" name="input_method" id="im_circ" value="circumference" checked>
+                                    <label class="btn btn-outline-primary" for="im_circ">Perímetro (M10)</label>
+                                    
+                                    <input type="radio" class="btn-check" name="input_method" id="im_diam" value="diameter">
+                                    <label class="btn btn-outline-primary" for="im_diam">Diâmetro (M11)</label>
+                                </div>
+                            </div>
+
+                            <!-- Value -->
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">Valor Medido (mm)</label>
+                                <input type="number" step="0.1" class="form-control input-lg border-primary" name="input_val" placeholder="Ex: 350" required>
+                                <div class="form-text">Digite o valor que você leu na trena.</div>
+                            </div>
+
+                            <!-- Material -->
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">Material (M14)</label>
+                                <select class="form-select input-lg" name="material_key" required>
+                                    <option value="" selected disabled>Selecione...</option>
+                                    <option value="k7">K7 (Ferro Dútil - Bolsa)</option>
+                                    <option value="k9">K9 (Ferro Dútil - Flange)</option>
+                                    <option value="fofo">FOFO (Ferro Fundido - Azul)</option>
+                                    <option value="pba12">PVC PBA 12</option>
+                                    <option value="pba15">PVC PBA 15</option>
+                                    <option value="pba20">PVC PBA 20</option>
+                                    <option value="flange">Flange (Outros)</option>
+                                </select>
+                            </div>
+
+                            <!-- Cement Toggle -->
+                            <div class="form-check form-switch mb-4 p-3 border rounded bg-light">
+                                <input class="form-check-input" type="checkbox" id="cementCheck" name="has_cement" style="width: 3em; height: 1.5em; margin-left: -2em;">
+                                <label class="form-check-label fw-bold ms-3 pt-1" for="cementCheck">Tem Revestimento? (M15)</label>
+                                <div class="small text-muted ms-3">Ative se for ferro antigo ou com cimento</div>
+                            </div>
+
+                            <button type="submit" class="btn btn-success btn-field w-100">
+                                <i class="fas fa-search"></i> BUSCAR DADOS DA TABELA
+                            </button>
+
+                        </form>
+                    </div>
+                </div>
+
+                <!-- RESULTS UI -->
+                {% if result %}
+                <div class="card card-field border-success mt-4">
+                    <div class="card-header bg-success text-white fw-bold">
+                        <i class="fas fa-check-circle me-2"></i> DADOS ENCONTRADOS
+                    </div>
+                    <div class="card-body">
+                        {% if result.error %}
+                            <div class="alert alert-danger">{{ result.error }}</div>
+                        {% else %}
+                            
+                            <div class="alert alert-light border text-center mb-3">
+                                <span class="text-muted">Tubulação Identificada:</span><br>
+                                <strong class="fs-4 text-dark">DN {{ result.matched_dn_mm }}mm ({{ result.matched_dn_pol }})</strong>
+                            </div>
+
+                            <div class="row g-3">
+                                <!-- Menu 12 -->
+                                <div class="col-12">
+                                    <div class="d-flex align-items-center p-3 border rounded bg-white shadow-sm">
+                                        <div class="bg-primary text-white rounded d-flex align-items-center justify-content-center me-3 fw-bold" style="width: 60px; height: 50px;">M12</div>
+                                        <div class="flex-grow-1">
+                                            <small class="text-uppercase text-muted fw-bold">Espessura Parede</small>
+                                            <div class="d-flex align-items-baseline">
+                                                {% if result.width_warning %}
+                                                    <span class="text-danger fw-bold">--</span>
+                                                {% else %}
+                                                    <strong class="fs-2 text-primary me-2">{{ result.wall_thickness }}</strong> 
+                                                    <span class="text-muted">mm</span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Menu 15 -->
+                                <div class="col-12">
+                                    <div class="d-flex align-items-center p-3 border rounded bg-white shadow-sm">
+                                        <div class="bg-warning text-dark rounded d-flex align-items-center justify-content-center me-3 fw-bold" style="width: 60px; height: 50px;">M15</div>
+                                        <div class="flex-grow-1">
+                                            <small class="text-uppercase text-muted fw-bold">Revestimento</small>
+                                            <div class="d-flex align-items-baseline">
+                                                <strong class="fs-2 text-dark me-2">{{ result.cement_thickness }}</strong>
+                                                <span class="text-muted">mm</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Extra Info -->
+                                <div class="col-12">
+                                    <div class="accordion" id="accordionExtra">
+                                        <div class="accordion-item">
+                                            <h2 class="accordion-header" id="headingOne">
+                                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne">
+                                                    Ver Detalhes do Cálculo (M10, M11, M13)
+                                                </button>
+                                            </h2>
+                                            <div id="collapseOne" class="accordion-collapse collapse" data-bs-parent="#accordionExtra">
+                                                <div class="accordion-body text-center">
+                                                    <div class="row">
+                                                        <div class="col-6 mb-2">
+                                                            <small class="d-block text-muted">M10 (Perímetro Calc)</small>
+                                                            <strong>{{ "%.1f"|format(result.measured_diam * 3.1416) }} mm</strong>
+                                                        </div>
+                                                        <div class="col-6 mb-2">
+                                                            <small class="d-block text-muted">M11 (Diâmetro Ext)</small>
+                                                            <strong>{{ result.measured_diam }} mm</strong>
+                                                        </div>
+                                                        <div class="col-12">
+                                                            <small class="d-block text-muted">M13 (Diâmetro Int Calc)</small>
+                                                            <strong>{{ result.int_diam }} mm</strong>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                            
+                            {% if result.width_warning %}
+                                <div class="alert alert-warning mt-3 mb-0">
+                                    <i class="fas fa-exclamation-triangle"></i> Não encontrei espessura na tabela para este Diâmetro/Material.
+                                </div>
+                            {% endif %}
+
+                        {% endif %}
+                    </div>
+                </div>
+                <script>
+                    // Auto-focus on results if present
+                    document.addEventListener("DOMContentLoaded", function() {
+                        var tabEl = document.querySelector('#calc-tab');
+                        var tab = new bootstrap.Tab(tabEl);
+                        tab.show();
+                    });
+                </script>
+                {% endif %}
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function switchTab() {
+    var tabEl = document.querySelector('#calc-tab');
+    var tab = new bootstrap.Tab(tabEl);
+    tab.show();
+    window.scrollTo(0,0);
+}
+</script>
+{% endblock %}
