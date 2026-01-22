@@ -21,7 +21,7 @@ Você tem duas opções: **Upload Manual** ou **GitHub**. O mais fácil para com
 1. No PythonAnywhere, vá em **Consoles** > **Bash**.
 2. Clone seu repositório:
    ```bash
-   git clone https://github.com/SEU_USUARIO/SEU_REPOSITORIO.git mysite
+   git clone https://github.com/MikaelMarcos/instrumenta.git mysite
    ```
 
 ## Passo 3: Instalar Dependências
