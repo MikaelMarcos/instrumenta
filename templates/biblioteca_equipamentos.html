@@ -1,0 +1,154 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-12 col-lg-10">
+        
+        <!-- Header & Search -->
+        <div class="d-flex align-items-center mb-4">
+            <a href="/" class="btn btn-outline-secondary me-3 rounded-circle" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+            <div class="flex-grow-1">
+                <form action="/biblioteca_equipamentos" method="GET" class="position-relative">
+                    <input type="text" name="search" class="form-control form-control-lg ps-5 rounded-pill shadow-sm" 
+                           placeholder="Buscar Fabricante ou Modelo..." value="{{ search }}" 
+                           oninput="this.form.submit()" autofocus>
+                    <i class="fas fa-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
+                </form>
+            </div>
+        </div>
+
+        <!-- Equipment Grid -->
+        <div class="row g-3">
+            {% for eq in equipments %}
+            <div class="col-12 col-md-6">
+                <div class="card card-field h-100 border-0 shadow-sm animate-fade-in" style="animation-delay: {{ loop.index0 * 0.1 }}s">
+                    <div class="card-header bg-white border-bottom-0 pt-3 pb-0 d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="badge {{ 'bg-warning text-dark' if 'DC' in eq.power_supply else 'bg-primary' }} mb-1">
+                                {{ eq.power_supply }}
+                            </span>
+                            <span class="badge bg-light text-secondary mb-1 border">{{ eq.type }}</span>
+                        </div>
+                        {% if 'DC' in eq.power_supply %}
+                        <i class="fas fa-exclamation-triangle text-warning" title="Cuidado: Alimentação DC"></i>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="card-body pt-2">
+                        <h4 class="card-title fw-bold mb-1">{{ eq.brand }}</h4>
+                        <h6 class="text-muted mb-3">{{ eq.model }}</h6>
+                        
+                        <div class="bg-light p-3 rounded mb-3">
+                            <div class="d-flex justify-content-between mb-2 border-bottom pb-2">
+                                <span class="text-muted small">Senha Usuário:</span>
+                                <strong>{{ eq.password_user or '---' }}</strong>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span class="text-muted small">Senha Admin:</span>
+                                <strong class="text-danger">{{ eq.password_admin or '---' }}</strong>
+                            </div>
+                        </div>
+
+                        {% if eq.menu_shortcuts %}
+                        <div class="alert alert-warning py-2 mb-3">
+                            <i class="fas fa-magic me-1"></i> <small><strong>Macete:</strong> {{ eq.menu_shortcuts }}</small>
+                        </div>
+                        {% endif %}
+
+                        {% if eq.notes %}
+                        <p class="small text-muted mb-0"><i class="fas fa-sticky-note me-1"></i> {{ eq.notes }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="col-12 text-center py-5">
+                <i class="fas fa-folder-open fa-3x text-muted opacity-50 mb-3"></i>
+                <p class="text-muted">Nenhum equipamento encontrado para "{{ search }}".</p>
+            </div>
+            {% endfor %}
+        </div>
+
+    </div>
+</div>
+
+<!-- Floating Action Button -->
+<button class="btn btn-primary rounded-circle shadow-lg position-fixed bottom-0 end-0 m-4" 
+        style="width: 60px; height: 60px; z-index: 1000;" 
+        data-bs-toggle="modal" data-bs-target="#addEquipmentModal">
+    <i class="fas fa-plus fa-lg"></i>
+</button>
+
+<!-- Add Modal -->
+<div class="modal fade" id="addEquipmentModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold">Novo Equipamento</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="/api/add_equipment" method="POST">
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <label class="form-label small fw-bold">Fabricante</label>
+                            <input type="text" name="brand" class="form-control" required>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small fw-bold">Modelo</label>
+                            <input type="text" name="model" class="form-control" required>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small fw-bold">Tipo</label>
+                            <select name="type" class="form-select">
+                                <option>Eletromagnético</option>
+                                <option>Ultrassônico</option>
+                            </select>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small fw-bold">Alimentação</label>
+                            <select name="power_supply" class="form-select">
+                                <option>220V AC</option>
+                                <option>12-36V DC</option>
+                                <option>Bateria</option>
+                            </select>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small fw-bold">Senha Usuário</label>
+                            <input type="text" name="password_user" class="form-control">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small fw-bold">Senha Admin</label>
+                            <input type="text" name="password_admin" class="form-control">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label small fw-bold">Macetes / Atalhos</label>
+                            <textarea name="menu_shortcuts" class="form-control" rows="2"></textarea>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label small fw-bold">Notas Técnicas</label>
+                            <textarea name="notes" class="form-control" rows="2"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .animate-fade-in {
+        animation: fadeIn 0.4s ease-out backwards;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+{% endblock %}

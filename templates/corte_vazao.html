@@ -1,0 +1,142 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<!-- HTMX is now in base.html -->
+
+<div class="row justify-content-center">
+    <div class="col-12 col-lg-8">
+        
+        <div class="d-flex align-items-center mb-4">
+            <a href="/" class="btn btn-outline-secondary me-3 rounded-circle" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+            <h2 class="mb-0 fw-bold">Corte de Zero</h2>
+        </div>
+
+        <div class="card card-field mb-4">
+            <div class="card-header-field bg-dark d-flex align-items-center justify-content-between">
+                <span><i class="fas fa-calculator me-2"></i> Parâmetros</span>
+            </div>
+            <div class="card-body">
+                <form hx-post="/calculate_cutoff" hx-trigger="load, input throttle:100ms, change" hx-target="#result-area">
+                    
+                    <!-- Modelo -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold text-muted">Modelo do Equipamento</label>
+                        <select name="model" class="form-select input-lg">
+                            <option value="generic">Genérico / Outros</option>
+                            <option value="contech">Contech / L-Mag</option>
+                            <option value="sitelab">Sitelab / SL</option>
+                            <option value="ecomag">Ecomag</option>
+                            <option value="siemens">Siemens / Sitrans</option>
+                        </select>
+                    </div>
+
+                    <!-- DN -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold text-muted">Diâmetro (DN)</label>
+                        <select name="dn" class="form-select input-lg">
+                            {% for item in dn_options %}
+                            <option value="{{ item.mm }}" {% if item.mm == 50 %}selected{% endif %}>DN{{ item.mm }} ({{ item.inch }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Velocity Slider -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-muted d-flex justify-content-between">
+                            <span>Sensibilidade ao Ruído</span>
+                            <span class="text-primary"><span id="vel-display">0.10</span> m/s</span>
+                        </label>
+                        
+                        <input type="range" class="form-range" name="velocity" id="velocityRange" 
+                               min="0.01" max="1.00" step="0.01" value="0.10"
+                               oninput="document.getElementById('vel-display').innerText = parseFloat(this.value).toFixed(2)">
+                        
+                        <div class="d-flex justify-content-between text-muted small mt-1">
+                            <span>0.01 m/s<br>(Muito Sensível)</span>
+                            <span>1.00 m/s<br>(Pouco Sensível)</span>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Result Area -->
+        <div id="result-area">
+            <!-- Initial State (Placeholder) -->
+            <div class="text-center py-5 text-muted">
+                <i class="fas fa-arrow-up fa-3x mb-3 text-secondary opacity-50"></i>
+                <p>Configure os parâmetros acima para calcular.</p>
+            </div>
+        </div>
+
+        <!-- DOUMENTATION & INFO SECTION -->
+        <div class="row g-4 mt-4">
+            <div class="col-12">
+                <div class="card card-field border-0 shadow-sm">
+                    <div class="card-header bg-white border-bottom-0 pt-4 px-4">
+                        <h4 class="fw-bold text-primary"><i class="fas fa-book-open me-2"></i> Entendendo o "Corte de Zero"</h4>
+                    </div>
+                    <div class="card-body px-4 pb-4">
+                        <p class="text-muted">
+                            O <strong>Low Flow Cutoff</strong> (Corte de Baixo Fluxo) é um parâmetro essencial para eliminar leituras falsas ("leituras fantasmas") quando a bomba está desligada. 
+                            Mesmo sem fluxo real, interferências elétricas, vibrações na tubulação ou movimentação do líquido estagnado podem fazer o medidor indicar uma pequena vazão (ex: 0.5 m³/h).
+                        </p>
+
+                        <div class="alert alert-light border-start border-primary border-4 rounded-end">
+                            <h5 class="fw-bold mb-2">A Lógica do Cálculo</h5>
+                            <p class="mb-2">O cálculo converte a <strong>velocidade de corte</strong> desejada (o limiar de ruído) em <strong>vazão volumétrica</strong> para aquele diâmetro específico.</p>
+                            
+                            <div class="bg-dark text-white p-3 rounded font-monospace text-center my-3">
+                                Q (m³/h) = Área (m²) × Velocidade (m/s) × 3600
+                            </div>
+
+                            <ul class="list-unstyled text-muted small mb-0">
+                                <li><strong>Q:</strong> Vazão de Corte calculada.</li>
+                                <li><strong>Área:</strong> Área da seção transversal do tubo (π × r²).</li>
+                                <li><strong>Velocidade:</strong> Sensibilidade definida no slider (padrão 0.1 m/s).</li>
+                            </ul>
+                        </div>
+
+                        <h5 class="fw-bold mt-4 mb-3">Como utilizar na prática?</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <ol class="list-group list-group-numbered list-group-flush">
+                                    <li class="list-group-item bg-transparent">Selecione o <strong>Modelo</strong> do medidor (SiteLab, Ecomag, etc) para ver a dica de menu correta.</li>
+                                    <li class="list-group-item bg-transparent">Selecione o <strong>Diâmetro (DN)</strong> da tubulação instalada.</li>
+                                    <li class="list-group-item bg-transparent">Ajuste a <strong>Sensibilidade</strong>. 
+                                        <br><span class="small text-muted">Use <strong>0.1 m/s</strong> como padrão. Se o ruído persistir, aumente para 0.2 ou 0.3 m/s.</span>
+                                    </li>
+                                </ol>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card bg-light border-0">
+                                    <div class="card-body">
+                                        <h6 class="fw-bold"><i class="fas fa-exclamation-circle text-warning me-2"></i>Atenção aos Modelos:</h6>
+                                        <p class="small mb-1">Alguns equipamentos (como certos modelos <strong>SiteLab</strong>) pedem o valor diretamente em <strong>m/s</strong>.</p>
+                                        <p class="small mb-0">A maioria (Siemens, Ecomag, Contech) pede o valor convertido em <strong>m³/h</strong>, que é o resultado principal desta calculadora.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<style>
+    /* Smooth fade in for HTMX content */
+    .animate-fade-in {
+        animation: fadeIn 0.3s ease-in-out;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+{% endblock %}

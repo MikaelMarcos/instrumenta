@@ -66,3 +66,31 @@ Você tem duas opções: **Upload Manual** ou **GitHub**. O mais fácil para com
 
 ## Dica Importante sobre o Banco de Dados
 O arquivo `field_assistant.db` será criado automaticamente na pasta `mysite` quando você rodar o app pela primeira vez. Como o PythonAnywhere mantém os arquivos, seus dados de aferição e tubulação ficarão salvos lá!
+
+---
+
+## Como Atualizar o Site (Deploy de Novas Versões)
+Sempre que você finalizar alterações no seu computador e quiser ver online, siga estes 3 passos:
+
+### 1. No seu Computador (Enviar as mudanças)
+Abra o terminal na pasta do projeto e rode:
+```bash
+git add .
+git commit -m "Novas atualizações: Corte de Vazão e Biblioteca"
+git push origin main
+```
+
+### 2. No PythonAnywhere (Baixar as mudanças)
+1. Abra o painel do [PythonAnywhere](https://www.pythonanywhere.com/consoles/).
+2. Vá em **Consoles** e abra o **Bash** (se já tiver um aberto, pode usar ele).
+3. Entre na pasta e puxe as atualizações:
+   ```bash
+   cd mysite
+   git pull
+   ```
+   *(Ele vai baixar os novos arquivos `app.py`, templates e static)*.
+
+### 3. Recarregar o Servidor
+1. Vá na aba **Web**.
+2. Clique no botão verde **Reload <seu-usuario>.pythonanywhere.com**.
+3. Pronto! Acesse o site e as novidades estarão lá.

@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<!-- HTMX is now in base.html -->
+
+<div class="row justify-content-center">
+    <div class="col-12 col-lg-8">
+        
+        <div class="d-flex align-items-center mb-4">
+            <a href="/" class="btn btn-outline-secondary me-3 rounded-circle" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+            <h2 class="mb-0 fw-bold">Corretor de Fator K</h2>
+        </div>
+
+        <div class="card card-field mb-4">
+            <div class="card-header-field bg-dark d-flex align-items-center justify-content-between">
+                <span><i class="fas fa-balance-scale me-2"></i> Dados de Aferição</span>
+            </div>
+            <div class="card-body">
+                <form hx-post="/calculate_k" hx-trigger="keyup delay:500ms from:input, change" hx-target="#result-area">
+                    
+                    <div class="row g-3">
+                        <div class="col-12">
+                             <label class="form-label fw-bold text-muted">Fator K Atual (Menu)</label>
+                             <input type="number" step="0.0001" class="form-control input-lg" name="current_k" value="1.0000" placeholder="Ex: 1.0000">
+                             <div class="form-text">O valor que está configurado atualmente no equipamento.</div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold text-danger">Valor Lido (Errado)</label>
+                            <input type="number" step="0.01" class="form-control input-lg border-danger" name="meter_val" placeholder="Ex: 50.0">
+                            <div class="form-text">O que o medidor fixo está marcando.</div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold text-success">Valor Real (Referência)</label>
+                            <input type="number" step="0.01" class="form-control input-lg border-success" name="ref_val" placeholder="Ex: 45.0">
+                            <div class="form-text">O valor do Ultrassônico ou Tanque.</div>
+                        </div>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+
+        <!-- Result Area -->
+        <div id="result-area">
+            <div class="text-center py-5 text-muted">
+                <i class="fas fa-calculator fa-3x mb-3 text-secondary opacity-50"></i>
+                <p>Preencha os valores para calcular o novo Fator K.</p>
+            </div>
+        </div>
+
+        <!-- Explainer -->
+        <div class="card card-field border-0 shadow-sm mt-4">
+            <div class="card-body p-4">
+                <h5 class="fw-bold mb-3"><i class="fas fa-info-circle text-primary me-2"></i> Como funciona?</h5>
+                <p class="text-muted mb-2">
+                    Use esta ferramenta quando o medidor estiver marcando diferente da referência (Ultrassônico Portátil ou Volumetria).
+                </p>
+                <div class="alert alert-light border-start border-warning border-4">
+                    <strong>Fórmula Usada:</strong><br>
+                    <code>K_Novo = K_Atual × (Referência / Leitura)</code>
+                </div>
+                <p class="small text-muted mb-0">
+                    <strong>Instalação Nova?</strong> Não use esta calculadora. Apenas limpe o sensor, encontre o "GK" na etiqueta metálica e digite no menu do aparelho.
+                </p>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<style>
+    .animate-fade-in {
+        animation: fadeIn 0.3s ease-in-out;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+{% endblock %}

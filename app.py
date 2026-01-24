@@ -34,11 +34,96 @@ class CalibrationReading(db.Model):
     user_identifier = db.Column(db.String(50)) # 'A' or 'B' (or username)
     minute_index = db.Column(db.Integer) # 1 to 10
     value = db.Column(db.Float)
-    timestamp = db.Column(db.DateTime, default=datetime.now)
+# --- EQUIPMENT KNOWLEDGE BASE ---
 
-# --- CONSTANTS & LOGIC ---
+class Equipment(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    brand = db.Column(db.String(50))
+    model = db.Column(db.String(50))
+    type = db.Column(db.String(50)) # 'Eletromagnético', 'Ultrassônico'
+    power_supply = db.Column(db.String(50))
+    password_user = db.Column(db.String(50))
+    password_admin = db.Column(db.String(50))
+    menu_shortcuts = db.Column(db.Text)
+    notes = db.Column(db.Text)
 
-# --- DATA TABLES ---
+@app.route('/biblioteca_equipamentos')
+def biblioteca_equipamentos():
+    search = request.args.get('search', '').lower()
+    if search:
+        equipments = Equipment.query.filter(
+            (Equipment.brand.ilike(f'%{search}%')) | 
+            (Equipment.model.ilike(f'%{search}%'))
+        ).all()
+    else:
+        equipments = Equipment.query.all()
+    return render_template('biblioteca_equipamentos.html', equipments=equipments, search=search)
+
+@app.route('/api/add_equipment', methods=['POST'])
+def add_equipment():
+    data = request.form
+    new_eq = Equipment(
+        brand=data.get('brand'),
+        model=data.get('model'),
+        type=data.get('type'),
+        power_supply=data.get('power_supply'),
+        password_user=data.get('password_user'),
+        password_admin=data.get('password_admin'),
+        menu_shortcuts=data.get('menu_shortcuts'),
+        notes=data.get('notes')
+    )
+    db.session.add(new_eq)
+    db.session.commit()
+    return redirect(url_for('biblioteca_equipamentos'))
+
+def seed_equipment_data():
+    if Equipment.query.first():
+        return # Already seeded
+
+    initial_data = [
+        {
+            'brand': 'Siemens', 'model': 'MAG 5000', 'type': 'Eletromagnético', 'power_supply': '220V AC',
+            'password_user': 'N/A', 'password_admin': 'N/A', 
+            'menu_shortcuts': '', 'notes': 'Senha não informada.'
+        },
+        {
+            'brand': 'Gaiatec', 'model': 'Não Informado', 'type': 'Ultrassônico', 'power_supply': '12-36V DC',
+            'password_user': 'Não tem', 'password_admin': '', 
+            'menu_shortcuts': '', 'notes': 'Fator K: Menu 45. Nº Série: Menu 61. OBS: Serial só no secundário.'
+        },
+        {
+            'brand': 'Sonesolute', 'model': 'Ecomag', 'type': 'Eletromagnético', 'power_supply': '12-36V DC',
+            'password_user': '1050000...', 'password_admin': '', 
+            'menu_shortcuts': 'Menu: Reservado', 'notes': 'Carritel com Nº Serial nos dois.'
+        },
+        {
+            'brand': 'Sitelab', 'model': 'SL 1168', 'type': 'Ultrassônico', 'power_supply': '12-36V DC',
+            'password_user': 'Não tem', 'password_admin': '', 
+            'menu_shortcuts': '', 'notes': 'Fator K: Menu 45. Nº Série: Menu 61. OBS: Serial só no secundário.'
+        },
+        {
+            'brand': 'Contech', 'model': 'CTHHD "6"', 'type': 'Eletromagnético', 'power_supply': '220V AC',
+            'password_user': '03210', 'password_admin': '19818', 
+            'menu_shortcuts': 'Aperta e solta o primeiro e último botão para desbloquear/entrar senha. Segura o último para sair.', 
+            'notes': 'Menu Sensor Factor mostra o Fator K. Carritel com Nº Serial nos dois.'
+        },
+        {
+            'brand': 'Flowmeter', 'model': 'Genérico', 'type': 'Ultrassônico', 'power_supply': '12-36V DC',
+            'password_user': '0525000...', 'password_admin': '', 
+            'menu_shortcuts': '', 'notes': 'Carritel com Nº Serial nos dois.'
+        }
+    ]
+
+    for item in initial_data:
+        record = Equipment(**item)
+        db.session.add(record)
+    
+    db.session.commit()
+
+# Initialize DB
+with app.app_context():
+    db.create_all()
+    seed_equipment_data()
 
 # Data transcribed from user request
 PIPE_STANDARDS = [
@@ -265,9 +350,143 @@ def get_results(session_id):
         'status': status
     })
 
-# Initialize DB
-with app.app_context():
-    db.create_all()
+# --- LOW FLOW CUTOFF MODULE ---
+
+@app.route('/corte_vazao')
+def corte_vazao():
+    # Options for DN with Inch equivalents
+    dn_options = [
+        {'mm': 15, 'inch': '1/2"'},
+        {'mm': 20, 'inch': '3/4"'},
+        {'mm': 25, 'inch': '1"'},
+        {'mm': 32, 'inch': '1 1/4"'},
+        {'mm': 40, 'inch': '1 1/2"'},
+        {'mm': 50, 'inch': '2"'},
+        {'mm': 65, 'inch': '2 1/2"'},
+        {'mm': 80, 'inch': '3"'},
+        {'mm': 100, 'inch': '4"'},
+        {'mm': 125, 'inch': '5"'},
+        {'mm': 150, 'inch': '6"'},
+        {'mm': 200, 'inch': '8"'},
+        {'mm': 250, 'inch': '10"'},
+        {'mm': 300, 'inch': '12"'},
+        {'mm': 350, 'inch': '14"'},
+        {'mm': 400, 'inch': '16"'},
+        {'mm': 450, 'inch': '18"'},
+        {'mm': 500, 'inch': '20"'},
+        {'mm': 600, 'inch': '24"'},
+        {'mm': 700, 'inch': '28"'},
+        {'mm': 800, 'inch': '32"'},
+        {'mm': 900, 'inch': '36"'},
+        {'mm': 1000, 'inch': '40"'},
+        {'mm': 1200, 'inch': '48"'}
+    ]
+    return render_template('corte_vazao.html', dn_options=dn_options)
+
+@app.route('/calculate_cutoff', methods=['POST'])
+def calculate_cutoff():
+    try:
+        dn_mm = int(request.form.get('dn', 0))
+        velocity = float(request.form.get('velocity', 0.1))
+        model = request.form.get('model', 'generic')
+        
+        # Formula: Flow = (pi * (dn_m)^2 / 4) * v * 3600
+        # dn_m = dn_mm / 1000
+        flow_m3h = (math.pi * ((dn_mm / 1000.0) ** 2) / 4) * velocity * 3600
+        
+        flow_formatted = f"{flow_m3h:.3f}"
+        
+        # Tip Logic
+        tips = {
+            'contech': "Menu: Setup > Alarm > Low Flow Cutoff (ou L-Cut). Senha padrão: 19818 ou 00521.",
+            'sitelab': "Menu: M51 (Low Flow Cutoff Value). Digite o valor calculado.",
+            'ecomag': "Menu: Parameter Set > Cut Off. Senha padrão: 0000.",
+            'siemens': "Menu: Parameters > Low Flow Cutoff. Unidade deve estar em m³/h.",
+            'generic': "Procure por: 'Low Flow Cutoff', 'Zero Cut' ou 'Band' no manual."
+        }
+        
+        tip_text = tips.get(model, tips['generic'])
+        
+        # Return HTML fragment for HTMX
+        return f"""
+        <div class="card card-field bg-white border-primary mb-3 animate-fade-in">
+            <div class="card-body text-center">
+                <h5 class="text-muted mb-2">Ajuste o corte para:</h5>
+                <h1 class="display-4 fw-bold text-primary mb-0">{flow_formatted} <small class="fs-4 text-muted">m³/h</small></h1>
+                
+                <div class="mt-3 pt-3 border-top d-inline-block">
+                    <span class="badge bg-light text-secondary border">Velocidade: {velocity} m/s</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="alert alert-info d-flex align-items-start" role="alert">
+            <i class="fas fa-lightbulb mt-1 me-3 fa-lg"></i>
+            <div>
+                <strong>Dica de Acesso:</strong><br>
+                {tip_text}
+            </div>
+        </div>
+        """
+        
+    except Exception as e:
+        return f"<div class='alert alert-danger'>Erro no cálculo: {str(e)}</div>"
+
+# --- K-FACTOR CALCULATOR MODULE ---
+
+@app.route('/calculadora_k')
+def calculadora_k():
+    return render_template('calculadora_k.html')
+
+@app.route('/calculate_k', methods=['POST'])
+def calculate_k():
+    try:
+        current_k = float(request.form.get('current_k', 1.0))
+        meter_val = float(request.form.get('meter_val', 0))
+        ref_val = float(request.form.get('ref_val', 0))
+        
+        if meter_val == 0:
+            return "" # Don't divide by zero, just wait for input
+            
+        # Logic: Ratio = Ref / Meter
+        ratio = ref_val / meter_val
+        new_k = current_k * ratio
+        
+        # Error %: ((Meter - Ref) / Ref) * 100 ... Wait, usually error is (Measured - True) / True
+        # Prompt says: "((Meter_Reading - Reference_Value) / Reference_Value) * 100"
+        if ref_val != 0:
+            error_pct = ((meter_val - ref_val) / ref_val) * 100
+        else:
+            error_pct = 0
+            
+        new_k_formatted = f"{new_k:.4f}"
+        error_formatted = f"{error_pct:.2f}"
+        
+        err_color = "text-danger" if abs(error_pct) > 2 else "text-success"
+        
+        return f"""
+        <div class="card card-field bg-white border-primary mb-3 animate-fade-in">
+            <div class="card-body text-center">
+                <h5 class="text-muted mb-2">Novo Fator K</h5>
+                <h1 class="display-3 fw-bold text-primary mb-0">{new_k_formatted}</h1>
+                <p class="text-muted small mt-2">Insira este valor no menu 'Sensor Factor' ou 'GK'</p>
+                
+                <div class="mt-3 pt-3 border-top">
+                    <span class="{err_color} fw-bold">
+                        <i class="fas fa-exclamation-triangle me-1"></i>
+                        Erro Encontrado: {error_formatted}%
+                    </span>
+                    <br>
+                    <small class="text-muted">O medidor estava lendo {abs(error_pct):.2f}% {"a mais" if error_pct > 0 else "a menos"} que a referência.</small>
+                </div>
+            </div>
+        </div>
+        """
+        
+    except ValueError:
+        return "" # Handle empty inputs gracefully during typing
+    except Exception as e:
+        return f"<div class='alert alert-danger'>Erro: {str(e)}</div>"
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
