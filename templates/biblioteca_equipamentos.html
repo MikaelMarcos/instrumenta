@@ -10,10 +10,10 @@
                 <i class="fas fa-arrow-left"></i>
             </a>
             <div class="flex-grow-1">
-                <form action="/biblioteca_equipamentos" method="GET" class="position-relative">
-                    <input type="text" name="search" class="form-control form-control-lg ps-5 rounded-pill shadow-sm" 
-                           placeholder="Buscar Fabricante ou Modelo..." value="{{ search }}" 
-                           oninput="this.form.submit()" autofocus>
+                <form onsubmit="event.preventDefault()" class="position-relative">
+                    <input type="text" id="searchInput" class="form-control form-control-lg ps-5 rounded-pill shadow-sm" 
+                           placeholder="Buscar Fabricante ou Modelo..." 
+                           oninput="filterEquipments()" autofocus>
                     <i class="fas fa-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
                 </form>
             </div>
@@ -22,7 +22,7 @@
         <!-- Equipment Grid -->
         <div class="row g-3">
             {% for eq in equipments %}
-            <div class="col-12 col-md-6">
+            <div class="col-12 col-md-6 equipment-card-col">
                 <div class="card card-field h-100 border-0 shadow-sm animate-fade-in" style="animation-delay: {{ loop.index0 * 0.1 }}s">
                     <div class="card-header bg-white border-bottom-0 pt-3 pb-0 d-flex justify-content-between align-items-center">
                         <div>
@@ -37,8 +37,8 @@
                     </div>
                     
                     <div class="card-body pt-2">
-                        <h4 class="card-title fw-bold mb-1">{{ eq.brand }}</h4>
-                        <h6 class="text-muted mb-3">{{ eq.model }}</h6>
+                        <h4 class="card-title fw-bold mb-1 card-brand">{{ eq.brand }}</h4>
+                        <h6 class="text-muted mb-3 card-model">{{ eq.model }}</h6>
                         
                         <div class="bg-light p-3 rounded mb-3">
                             <div class="d-flex justify-content-between mb-2 border-bottom pb-2">
@@ -63,12 +63,44 @@
                     </div>
                 </div>
             </div>
-            {% else %}
-            <div class="col-12 text-center py-5">
-                <i class="fas fa-folder-open fa-3x text-muted opacity-50 mb-3"></i>
-                <p class="text-muted">Nenhum equipamento encontrado para "{{ search }}".</p>
-            </div>
             {% endfor %}
+            
+            <div id="noResults" class="col-12 text-center py-5 d-none">
+                <i class="fas fa-folder-open fa-3x text-muted opacity-50 mb-3"></i>
+                <p class="text-muted">Nenhum equipamento encontrado.</p>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    function filterEquipments() {
+        const input = document.getElementById('searchInput');
+        const filter = input.value.toLowerCase();
+        const cards = document.getElementsByClassName('equipment-card-col');
+        let hasResults = false;
+
+        for (let i = 0; i < cards.length; i++) {
+            const brand = cards[i].querySelector('.card-brand').innerText.toLowerCase();
+            const model = cards[i].querySelector('.card-model').innerText.toLowerCase();
+            
+            if (brand.includes(filter) || model.includes(filter)) {
+                cards[i].classList.remove('d-none');
+                hasResults = true;
+            } else {
+                cards[i].classList.add('d-none');
+            }
+        }
+        
+        const noResults = document.getElementById('noResults');
+        if (hasResults) {
+            noResults.classList.add('d-none');
+        } else {
+            noResults.classList.remove('d-none');
+        }
+    }
+</script>
         </div>
 
     </div>

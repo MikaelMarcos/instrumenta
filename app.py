@@ -49,15 +49,9 @@ class Equipment(db.Model):
 
 @app.route('/biblioteca_equipamentos')
 def biblioteca_equipamentos():
-    search = request.args.get('search', '').lower()
-    if search:
-        equipments = Equipment.query.filter(
-            (Equipment.brand.ilike(f'%{search}%')) | 
-            (Equipment.model.ilike(f'%{search}%'))
-        ).all()
-    else:
-        equipments = Equipment.query.all()
-    return render_template('biblioteca_equipamentos.html', equipments=equipments, search=search)
+    # Only return all equipments, search is client-side
+    equipments = Equipment.query.all()
+    return render_template('biblioteca_equipamentos.html', equipments=equipments)
 
 @app.route('/api/add_equipment', methods=['POST'])
 def add_equipment():

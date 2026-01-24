@@ -18,12 +18,12 @@
                 <span><i class="fas fa-calculator me-2"></i> Parâmetros</span>
             </div>
             <div class="card-body">
-                <form hx-post="/calculate_cutoff" hx-trigger="load, input throttle:100ms, change" hx-target="#result-area">
+                <form id="calcForm">
                     
                     <!-- Modelo -->
                     <div class="mb-4">
                         <label class="form-label fw-bold text-muted">Modelo do Equipamento</label>
-                        <select name="model" class="form-select input-lg">
+                        <select name="model" id="inputModel" class="form-select input-lg" onchange="calculate()">
                             <option value="generic">Genérico / Outros</option>
                             <option value="contech">Contech / L-Mag</option>
                             <option value="sitelab">Sitelab / SL</option>
@@ -35,7 +35,7 @@
                     <!-- DN -->
                     <div class="mb-4">
                         <label class="form-label fw-bold text-muted">Diâmetro (DN)</label>
-                        <select name="dn" class="form-select input-lg">
+                        <select name="dn" id="inputDn" class="form-select input-lg" onchange="calculate()">
                             {% for item in dn_options %}
                             <option value="{{ item.mm }}" {% if item.mm == 50 %}selected{% endif %}>DN{{ item.mm }} ({{ item.inch }})</option>
                             {% endfor %}
@@ -51,7 +51,7 @@
                         
                         <input type="range" class="form-range" name="velocity" id="velocityRange" 
                                min="0.01" max="1.00" step="0.01" value="0.10"
-                               oninput="document.getElementById('vel-display').innerText = parseFloat(this.value).toFixed(2)">
+                               oninput="document.getElementById('vel-display').innerText = parseFloat(this.value).toFixed(2); calculate();">
                         
                         <div class="d-flex justify-content-between text-muted small mt-1">
                             <span>0.01 m/s<br>(Muito Sensível)</span>
@@ -64,14 +64,13 @@
 
         <!-- Result Area -->
         <div id="result-area">
-            <!-- Initial State (Placeholder) -->
             <div class="text-center py-5 text-muted">
                 <i class="fas fa-arrow-up fa-3x mb-3 text-secondary opacity-50"></i>
                 <p>Configure os parâmetros acima para calcular.</p>
             </div>
         </div>
 
-        <!-- DOUMENTATION & INFO SECTION -->
+        <!-- Documentation (Same as before) -->
         <div class="row g-4 mt-4">
             <div class="col-12">
                 <div class="card card-field border-0 shadow-sm">
@@ -129,14 +128,51 @@
     </div>
 </div>
 
-<style>
-    /* Smooth fade in for HTMX content */
-    .animate-fade-in {
-        animation: fadeIn 0.3s ease-in-out;
+<script>
+    function calculate() {
+        const dnMm = parseInt(document.getElementById('inputDn').value);
+        const velocity = parseFloat(document.getElementById('velocityRange').value);
+        const model = document.getElementById('inputModel').value;
+
+        // Math: Q = (pi * (dn/1000)^2 / 4) * v * 3600
+        const dnM = dnMm / 1000.0;
+        const area = Math.PI * Math.pow(dnM, 2) / 4.0;
+        const flow = area * velocity * 3600.0;
+        
+        const flowFormatted = flow.toFixed(3);
+
+        const tips = {
+            'contech': "Menu: Setup > Alarm > Low Flow Cutoff (ou L-Cut). Senha padrão: 19818 ou 00521.",
+            'sitelab': "Menu: M51 (Low Flow Cutoff Value). Digite o valor calculado.",
+            'ecomag': "Menu: Parameter Set > Cut Off. Senha padrão: 0000.",
+            'siemens': "Menu: Parameters > Low Flow Cutoff. Unidade deve estar em m³/h.",
+            'generic': "Procure por: 'Low Flow Cutoff', 'Zero Cut' ou 'Band' no manual."
+        };
+        const tipText = tips[model] || tips['generic'];
+
+        const html = `
+        <div class="card card-field bg-white border-primary mb-3 animate-fade-in">
+            <div class="card-body text-center">
+                <h5 class="text-muted mb-2">Ajuste o corte para:</h5>
+                <h1 class="display-4 fw-bold text-primary mb-0">${flowFormatted} <small class="fs-4 text-muted">m³/h</small></h1>
+                <div class="mt-3 pt-3 border-top d-inline-block">
+                    <span class="badge bg-light text-secondary border">Velocidade: ${velocity.toFixed(2)} m/s</span>
+                </div>
+            </div>
+        </div>
+        <div class="alert alert-info d-flex align-items-start" role="alert">
+            <i class="fas fa-lightbulb mt-1 me-3 fa-lg"></i>
+            <div>
+                <strong>Dica de Acesso:</strong><br>
+                ${tipText}
+            </div>
+        </div>
+        `;
+
+        document.getElementById('result-area').innerHTML = html;
     }
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(10px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-</style>
+    
+    // Calculate initially
+    document.addEventListener('DOMContentLoaded', calculate);
+</script>
 {% endblock %}
