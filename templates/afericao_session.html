@@ -91,6 +91,33 @@
         </div>
 
         <a href="/" class="btn btn-outline-secondary">Voltar ao Menu</a>
+        
+        <hr class="my-4">
+        
+        <!-- K-FACTOR CORRECTOR -->
+        <div class="card bg-light border-primary">
+            <div class="card-header bg-primary text-white">
+                <i class="fas fa-sliders-h me-2"></i> Correção de Fator K
+            </div>
+            <div class="card-body">
+                <p class="small text-muted">
+                    O sistema assume que o <strong>Técnico A (Medidor)</strong> está errado e o <strong>Técnico B (Mala)</strong> é a referência correta.
+                </p>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Qual o Fator K atual do medidor?</label>
+                    <input type="number" id="currentK" class="form-control form-control-lg text-center" placeholder="Ex: 1.000" step="0.0001">
+                </div>
+                <button class="btn btn-primary w-100" onclick="calcNewK()">
+                    Calcular Novo Fator K
+                </button>
+                
+                <div id="kResult" class="mt-3 d-none animate-fade-in">
+                    <h5 class="text-muted">Novo Fator K Sugerido:</h5>
+                    <div class="display-4 fw-bold text-success" id="newKVal">...</div>
+                    <p class="small text-muted mt-2" id="kExplanation">...</p>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -123,6 +150,9 @@ let startTime = null;
 let currentMinute = 1;
 let intervalId = null;
 let syncInterval = null;
+let sessionInterval = 60; // Default
+let finalAvgA = 0;
+let finalAvgB = 0;
 
 // Audio context for alerts
 const audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -166,6 +196,7 @@ function startSync() {
             if(data.start_time && !startTime) {
                 // Test has started!
                 startTime = data.start_time; // This is a unix timestamp (seconds)
+                if(data.interval) sessionInterval = data.interval;
                 beginTest();
             }
         } catch(e) { console.error(e); }
@@ -202,8 +233,8 @@ function gameLoop() {
     document.getElementById('mainTimer').textContent = 
         `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
     
-    // Logic for alerts (every 60s)
-    const nextMinuteMark = currentMinute * 60;
+    // Logic for alerts (based on sessionInterval)
+    const nextMinuteMark = currentMinute * sessionInterval;
     const timeToNext = nextMinuteMark - diff;
     
     document.getElementById('nextReadingTimer').textContent = Math.ceil(timeToNext) + "s";
@@ -285,6 +316,27 @@ async function finishTest() {
     } else {
         statusCard.classList.add('alert-danger');
     }
+    
+    // Store for K Calc
+    finalAvgA = data.avg_a;
+    finalAvgB = data.avg_b;
+}
+
+function calcNewK() {
+    const currentK = parseFloat(document.getElementById('currentK').value);
+    if(!currentK || finalAvgA === 0) return;
+    
+    // Logic: New K = Current K * (Ref / Meter)
+    // Ref = B, Meter = A
+    const ratio = finalAvgB / finalAvgA;
+    const newK = currentK * ratio;
+    
+    document.getElementById('kResult').classList.remove('d-none');
+    document.getElementById('newKVal').textContent = newK.toFixed(5);
+    
+    const diff = ((finalAvgA - finalAvgB) / finalAvgB) * 100;
+    document.getElementById('kExplanation').innerHTML = 
+        `O medidor estava lendo <strong>${Math.abs(diff).toFixed(2)}%</strong> ${diff > 0 ? "a mais" : "a menos"} que a referência.`;
 }
 </script>
 {% endblock %}

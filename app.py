@@ -27,6 +27,7 @@ class CalibrationSession(db.Model):
     start_time = db.Column(db.Float, nullable=True) # Timestamp when the test started
     is_active = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=datetime.now)
+    interval_seconds = db.Column(db.Integer, default=60)
 
 class CalibrationReading(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -105,6 +106,11 @@ def seed_equipment_data():
             'brand': 'Flowmeter', 'model': 'Genérico', 'type': 'Ultrassônico', 'power_supply': '12-36V DC',
             'password_user': '0525000...', 'password_admin': '', 
             'menu_shortcuts': '', 'notes': 'Carritel com Nº Serial nos dois.'
+        },
+        {
+            'brand': 'Euromag', 'model': 'Carretel', 'type': 'Eletromagnético', 'power_supply': 'N/A',
+            'password_user': '', 'password_admin': '', 
+            'menu_shortcuts': '', 'notes': 'Senha: 231042'
         }
     ]
 
@@ -262,9 +268,12 @@ def afericao_session(session_id):
 @app.route('/api/create_session', methods=['POST'])
 def create_session():
     import random, string
+    data = request.json or {} 
+    interval = int(data.get('interval', 60))
+    
     # Generate short random code
     session_id = ''.join(random.choices(string.ascii_uppercase + string.digits, k=4))
-    new_session = CalibrationSession(id=session_id)
+    new_session = CalibrationSession(id=session_id, interval_seconds=interval)
     db.session.add(new_session)
     db.session.commit()
     return jsonify({'session_id': session_id})
@@ -295,6 +304,7 @@ def session_status(session_id):
     
     return jsonify({
         'start_time': session.start_time,
+        'interval': session.interval_seconds,
         'count_a': count_a,
         'count_b': count_b
     })
@@ -428,6 +438,10 @@ def calculate_cutoff():
 
 # --- K-FACTOR CALCULATOR MODULE ---
 
+@app.route('/sensor_pressao')
+def sensor_pressao():
+    return render_template('sensor_pressao.html')
+
 @app.route('/calculadora_k')
 def calculadora_k():
     return render_template('calculadora_k.html')
@@ -453,7 +467,7 @@ def calculate_k():
         else:
             error_pct = 0
             
-        new_k_formatted = f"{new_k:.4f}"
+        new_k_formatted = f"{new_k:.5f}"
         error_formatted = f"{error_pct:.2f}"
         
         err_color = "text-danger" if abs(error_pct) > 2 else "text-success"
